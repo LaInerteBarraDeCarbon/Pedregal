@@ -43,6 +43,7 @@ public class Pedregal {
 	public void calcula(int frente, int profundidad){
 		int[][] aux = auxResultados();
 		
+		//aux[frente][profundidad]
 		
 	}
 	
