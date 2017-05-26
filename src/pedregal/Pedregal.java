@@ -53,8 +53,8 @@ public class Pedregal {
 							this.orientacion = 'O';
 						}
 					}
-					j++;
 				}
+				j++;
 			}
 			i++;
 		}
@@ -105,13 +105,10 @@ public class Pedregal {
 			this.frente = sc.nextInt();
 			this.lado = sc.nextInt();
 			this.terreno = new int[xTerreno][yTerreno];
+			int anulados = sc.nextInt();
 
-			for (int i = 0; i < this.xTerreno; i++)
-				for (int j = 0; j < this.yTerreno; j++)
-					this.terreno[i][j] = 0;
-
-			for (int i = 0; i < sc.nextInt(); i++)
-				this.terreno[sc.nextInt()][sc.nextInt()] = 1;
+			for (int i = 0; i < anulados; i++)
+				this.terreno[sc.nextInt() - 1][sc.nextInt() - 1] = 1;
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -120,4 +117,5 @@ public class Pedregal {
 		}
 		sc.close();
 	}
+
 }
