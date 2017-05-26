@@ -2,113 +2,116 @@ package pedregal;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Scanner;
 
 public class Pedregal {
-	
-	private int filas;
-	private int columnas;
-	private int matriz[][];
-	
-	public Pedregal(int fil, int col){
-		this.filas = fil;
-		this.columnas = col;
 
-		this.matriz = new int[fil][col];
+	private int xTerreno, yTerreno, frente, lado, xPosicion, yPosicion;
+	private int terreno[][];
+	private boolean factible = false;
+	private char orientacion;
 
-		for (int i = 0; i < filas; i++)
-			for (int j = 0; j < columnas; j++)
-				matriz[i][j] = 0;
+	public Pedregal(String path) {
+		try {
+			leerArchivo(path);
+		} catch (Exception e) {
+			System.out.println("Error abrir archivo.");
+			e.printStackTrace();
+		}
 	}
-	
-	public Pedregal(int orden) {
-		this.filas = this.columnas = orden;
-		this.matriz = new int[this.filas][this.columnas];
-		for (int i = 0; i < this.filas; i++)
-			for (int j = 0; j < this.columnas; j++)
-				this.matriz[i][j] = 0;
-	}
-	
-	public Pedregal(int fil, int col, int[][] mat) {
-		this.filas = fil;
-		this.columnas = col;
 
-		this.matriz = new int[fil][col];
+	public void calcula() {
+		int i = 0;
+		while (!this.factible && i < this.xTerreno) {
+			int j = 0;
+			while (!this.factible && j < this.yTerreno) {
+				if (terreno[i][j] == 0) {
+					xPosicion = i;
+					yPosicion = j;
+					int suma = 0;
 
-		for (int i = 0; i < filas; i++)
-			for (int j = 0; j < columnas; j++)
-				matriz[i][j] = mat[i][j];
+					for (int x = 0; x < this.frente; x++)
+						for (int y = 0; y < this.lado; y++)
+							if (i <= this.xTerreno - this.frente && j <= this.yTerreno - this.lado)
+								suma += terreno[x][y];
+
+					if (suma == 0) {
+						this.factible = true;
+						this.orientacion = 'S';
+					} else {
+						suma = 0;
+						for (int x = 0; x < this.frente; x++)
+							for (int y = 0; y < this.lado; y++)
+								if (i <= this.xTerreno - this.lado && j <= this.yTerreno - this.frente)
+									suma += terreno[y][x];
+
+						if (suma == 0) {
+							this.factible = true;
+							this.orientacion = 'O';
+						}
+					}
+					j++;
+				}
+			}
+			i++;
+		}
 	}
-	
-	public void calcula(int frente, int profundidad){
-		int[][] aux = auxResultados();
-		
-		//aux[frente][profundidad]
-		
+
+	public void setValor(int fil, int col, int valor) {
+		this.terreno[fil][col] = valor;
 	}
-	
-	public int[][] auxResultados(){
-		int[][] aux = new int[this.filas][this.columnas];
-		aux[0][0] = this.matriz[0][0];
-		
-		// cargo la primer fila
-		for(int i = 1; i < this.filas; i++)
-			aux[i][0] = this.matriz[i-1][0] + this.matriz[i][0];
-		// cargo la primer columna
-		for(int j = 1; j < this.columnas; j++)
-			aux[0][j] = this.matriz[0][j-1] + this.matriz[0][j];
-		
-		// cargo los resultados del medio
-		for(int i = 1; i < this.filas; i++)
-			for(int j = 1; j < this.columnas; j++)
-				aux[i][j] = aux[i-1][j] + aux[i][j-1] - aux[i-1][j-1] + this.matriz[i][j];
-		
-		return aux;
+
+	public int getValor(int fil, int col) {
+		return this.terreno[fil][col];
 	}
-	
-	public void setValor(int fil, int col, int valor){
-		this.matriz[fil][col] = valor;
-	}
-	
-	public int getValor(int fil, int col){
-		return this.matriz[fil][col];
-	}
-	
+
 	public int getFilas() {
-		return filas;
+		return xTerreno;
 	}
 
 	public int getColumnas() {
-		return columnas;
+		return yTerreno;
 	}
 
 	public int[][] getMatriz() {
-		return matriz;
+		return terreno;
 	}
-	
-	public void mostarMatriz() {
-		for (int i = 0; i < this.filas; i++) {
-			for (int j = 0; j < this.columnas; j++) {
-				System.out.println("Fila " + (i + 1) + "\tColumna " + (j + 1) + "\t" + this.matriz[i][j]);
-			}
+
+	public void grabarArchivo(String path) {
+		PrintWriter salida;
+		try {
+			salida = new PrintWriter(new FileWriter(path));
+			if (this.factible) {
+				salida.println("SI");
+				salida.println(this.xPosicion + " " + this.yPosicion);
+				salida.println(this.orientacion);
+			} else
+				salida.println("NO");
+			salida.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
-	
-	public void leerArchivoMatriz(String path) {
+
+	public void leerArchivo(String path) {
 		Scanner sc = null;
 		try {
 			sc = new Scanner(new File(path));
+			this.xTerreno = sc.nextInt();
+			this.yTerreno = sc.nextInt();
+			this.frente = sc.nextInt();
+			this.lado = sc.nextInt();
+			this.terreno = new int[xTerreno][yTerreno];
 
-			this.filas = sc.nextInt();
-			this.columnas = sc.nextInt();
+			for (int i = 0; i < this.xTerreno; i++)
+				for (int j = 0; j < this.yTerreno; j++)
+					this.terreno[i][j] = 0;
 
-			this.matriz = new int[(int) this.filas][(int) this.columnas];
-
-			for (int i = 0; i < this.filas; i++) {
-				for (int j = 0; j < this.columnas; j++) {
-					this.matriz[sc.nextInt()][sc.nextInt()] = sc.nextInt();
-				}
-			}
+			for (int i = 0; i < sc.nextInt(); i++)
+				this.terreno[sc.nextInt()][sc.nextInt()] = 1;
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
